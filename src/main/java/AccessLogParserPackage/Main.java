@@ -47,7 +47,9 @@ public class Main {
             System.out.println("Общее количество строк в файле: " + countLines);
             System.out.println("Средний объём трафика сайта за час: " + statistics.getTrafficRate());
             System.out.println("Адреса существующих страниц:" + "\n" + statistics.getAllExistPaths());
+            System.out.println("Адреса несуществующих страниц:" + "\n" + statistics.getAllNotExistPaths());
             System.out.println("Статистика операционных систем пользователей сайта: " + statistics.getOsStatistics());
+            System.out.println("Статистика браузеров пользователей сайта: " + statistics.getBrowserStatistics());
 
         }
     }
