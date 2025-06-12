@@ -28,15 +28,15 @@ public class Main {
             numberOfFiles++;
             System.out.println("Путь указан верно" + "\n" + "Это файл номер " + numberOfFiles);
 
-            List<Integer> linesLength = new ArrayList<>();
+            int countLines = 0;
 
             try {
                 FileReader fileReader = new FileReader(path);
                 BufferedReader reader = new BufferedReader(fileReader);
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    countLines++;
                     if (line.length() > 1024) throw new LineTooLongException();
-                    linesLength.add(line.length());
                     LogEntry logEntry = new LogEntry(line);
                     statistics.addEntry(logEntry);
                 }
@@ -44,8 +44,10 @@ public class Main {
                 ex.printStackTrace();
             }
 
-            System.out.println("Общее количество строк в файле: " + linesLength.size());
+            System.out.println("Общее количество строк в файле: " + countLines);
             System.out.println("Средний объём трафика сайта за час: " + statistics.getTrafficRate());
+            System.out.println("Адреса существующих страниц:" + "\n" + statistics.getAllExistPaths());
+            System.out.println("Статистика операционных систем пользователей сайта: " + statistics.getOsStatistics());
 
         }
     }
