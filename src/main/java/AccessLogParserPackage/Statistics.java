@@ -12,8 +12,11 @@ public class Statistics {
     LocalDateTime maxTime;
     HashSet<String> existPaths;
     HashSet<String> notExistPaths;
+    HashSet<String> uniqueIpUsersNotBot;
     HashMap<String, Integer> osCount;
     HashMap<String, Integer> browserCount;
+    long usersNotBot;
+    long errorCodeCount;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -23,6 +26,9 @@ public class Statistics {
         this.notExistPaths = new HashSet<>();
         this.osCount = new HashMap<>();
         this.browserCount = new HashMap<>();
+        this.usersNotBot = 0;
+        this.errorCodeCount = 0;
+        this.uniqueIpUsersNotBot = new HashSet<>();
     }
 
     public void addEntry(LogEntry logEntry) {
@@ -51,11 +57,17 @@ public class Statistics {
         } else {
             this.browserCount.put(logEntry.getUserAgent().getBrowser().toString(), 1);
         }
+        if (!logEntry.getUserAgent().isBot()) {
+            this.usersNotBot++;
+            this.uniqueIpUsersNotBot.add(logEntry.getIpAddr());
+        }
+        if ((logEntry.getResponseCode() / 100 == 4 || logEntry.getResponseCode() / 100 == 5)) {
+            this.errorCodeCount++;
+        }
     }
 
     public long getTrafficRate() {
-        long hourDifference = Duration.between(this.minTime, this.maxTime).toHours();
-        return this.totalTraffic / hourDifference;
+        return this.totalTraffic / hoursBetweenMinMax();
     }
 
     public HashSet<String> getAllExistPaths() {
@@ -88,5 +100,18 @@ public class Statistics {
             browserStatistics.put(s, (double) this.browserCount.get(s) / allBrowserCount);
         }
         return browserStatistics;
+    }
+
+    public long hoursBetweenMinMax () {
+        return Duration.between(this.minTime, this.maxTime).toHours();
+    }
+    public double visitsPerHour () {
+        return (double)this.usersNotBot / hoursBetweenMinMax();
+    }
+    public double errorRequestPerHour () {
+        return (double)this.errorCodeCount / hoursBetweenMinMax();
+    }
+    public double trafficPerUser () {
+        return (double)this.usersNotBot / this.uniqueIpUsersNotBot.size();
     }
 }

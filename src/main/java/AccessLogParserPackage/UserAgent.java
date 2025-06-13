@@ -4,6 +4,7 @@ public class UserAgent {
 
     final OsType osType;
     final Browser browser;
+    final String wholeUserAgent;
 
     public OsType getOsType() {
         return osType;
@@ -34,6 +35,10 @@ public class UserAgent {
         } else {
             this.browser = Browser.OTHER;
         }
+        this.wholeUserAgent = userAgent;
+    }
+    public boolean isBot () {
+        return this.wholeUserAgent.contains("bot");
     }
 
 }

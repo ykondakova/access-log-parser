@@ -3,14 +3,10 @@ package AccessLogParserPackage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-
-        Statistics statistics = new Statistics();
 
         int numberOfFiles = 0;
 
@@ -27,6 +23,8 @@ public class Main {
             }
             numberOfFiles++;
             System.out.println("Путь указан верно" + "\n" + "Это файл номер " + numberOfFiles);
+
+            Statistics statistics = new Statistics();
 
             int countLines = 0;
 
@@ -50,7 +48,9 @@ public class Main {
             System.out.println("Адреса несуществующих страниц:" + "\n" + statistics.getAllNotExistPaths());
             System.out.println("Статистика операционных систем пользователей сайта: " + statistics.getOsStatistics());
             System.out.println("Статистика браузеров пользователей сайта: " + statistics.getBrowserStatistics());
-
+            System.out.println("Среднее количество посещений сайта реальными пользователями за час: " + statistics.visitsPerHour());
+            System.out.println("Среднее количество ошибочных запросов за час: " + statistics.errorRequestPerHour());
+            System.out.println("Средняя посещаемость одним пользователем: " + statistics.trafficPerUser());
         }
     }
 }
