@@ -1,9 +1,9 @@
 package AccessLogParserPackage;
 
+import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class Statistics {
 
@@ -13,8 +13,11 @@ public class Statistics {
     HashSet<String> existPaths;
     HashSet<String> notExistPaths;
     HashSet<String> uniqueIpUsersNotBot;
+    HashSet<String> refererDomain;
     HashMap<String, Integer> osCount;
     HashMap<String, Integer> browserCount;
+    HashMap<LocalDateTime, Integer> requestsPerSecond;
+    HashMap<String, Integer> requestsPerUser;
     long usersNotBot;
     long errorCodeCount;
 
@@ -29,6 +32,9 @@ public class Statistics {
         this.usersNotBot = 0;
         this.errorCodeCount = 0;
         this.uniqueIpUsersNotBot = new HashSet<>();
+        this.requestsPerSecond = new HashMap<>();
+        this.requestsPerUser = new HashMap<>();
+        this.refererDomain = new HashSet<>();
     }
 
     public void addEntry(LogEntry logEntry) {
@@ -60,10 +66,30 @@ public class Statistics {
         if (!logEntry.getUserAgent().isBot()) {
             this.usersNotBot++;
             this.uniqueIpUsersNotBot.add(logEntry.getIpAddr());
+            if (this.requestsPerSecond.containsKey(logEntry.getTime())) {
+                this.requestsPerSecond.put(logEntry.getTime(), this.requestsPerSecond.get(logEntry.getTime()) + 1);
+            } else {
+                this.requestsPerSecond.put(logEntry.getTime(), 1);
+            }
+            if (this.requestsPerUser.containsKey(logEntry.getIpAddr())) {
+                this.requestsPerUser.put(logEntry.getIpAddr(), this.requestsPerUser.get(logEntry.getIpAddr()) + 1);
+            } else {
+                this.requestsPerUser.put(logEntry.getIpAddr(), 1);
+            }
         }
         if ((logEntry.getResponseCode() / 100 == 4 || logEntry.getResponseCode() / 100 == 5)) {
             this.errorCodeCount++;
         }
+        try {
+            String host = new URL(logEntry.getReferer()).getHost();
+            String[] hostParts = host.split("\\.");
+            if (hostParts.length > 2) {
+                host = hostParts[hostParts.length - 2] + "." + hostParts[hostParts.length - 1];
+            }
+            this.refererDomain.add(host);
+        } catch (Exception ignored) {
+        }
+        ;
     }
 
     public long getTrafficRate() {
@@ -102,16 +128,37 @@ public class Statistics {
         return browserStatistics;
     }
 
-    public long hoursBetweenMinMax () {
+    public long hoursBetweenMinMax() {
         return Duration.between(this.minTime, this.maxTime).toHours();
     }
-    public double visitsPerHour () {
-        return (double)this.usersNotBot / hoursBetweenMinMax();
+
+    public double visitsPerHour() {
+        return (double) this.usersNotBot / hoursBetweenMinMax();
     }
-    public double errorRequestPerHour () {
-        return (double)this.errorCodeCount / hoursBetweenMinMax();
+
+    public double errorRequestPerHour() {
+        return (double) this.errorCodeCount / hoursBetweenMinMax();
     }
-    public double trafficPerUser () {
-        return (double)this.usersNotBot / this.uniqueIpUsersNotBot.size();
+
+    public double trafficPerUser() {
+        return (double) this.usersNotBot / this.uniqueIpUsersNotBot.size();
+    }
+
+    public Map.Entry<LocalDateTime, Integer> maxRequestsPerSecond() {
+        return this.requestsPerSecond.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .get();
+    }
+
+    public Map.Entry<String, Integer> maxRequestsPerUser() {
+        return this.requestsPerUser.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .get();
+    }
+
+    public HashSet<String> getRefererDomain() {
+        return this.refererDomain;
     }
 }

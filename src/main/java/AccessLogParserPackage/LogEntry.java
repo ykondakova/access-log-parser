@@ -66,4 +66,5 @@ public class LogEntry {
     public UserAgent getUserAgent() {
         return userAgent;
     }
+
 }
